@@ -10,34 +10,46 @@ body {
     color: #fff;
     overflow: hidden;
     height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin: 0;
+    padding: 0;
     cursor: none;
+    transition: background-color 1.5s ease-out, color 1.5s ease-out;
 }
 
 .container {
     width: 90%;
     max-width: 1200px;
     text-align: center;
-    padding: 2rem;
+    padding: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .question-container {
-    font-size: clamp(2rem, 5vw, 4rem);
-    line-height: 1.0;
-    min-height: 300px;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 0.85;
     display: flex;
     align-items: center;
+    align-content: center;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 0.3em;
+    gap: 0;
+    row-gap: 0.3em;
+    margin: 0;
 }
 
 .word {
     display: inline-block;
     white-space: nowrap;
     margin-right: 0.5em;
+    line-height: 0.85;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    vertical-align: top;
 }
 
 .word .letter {
@@ -50,10 +62,11 @@ body {
     opacity: 0;
     transform-origin: center;
     /* Initial state: matches appear animation's "from" state */
+    /* Letter scale is applied via inline style, we multiply by 0.8 for initial appear */
     transform: translate(
         calc(0px + var(--interaction-x, 0px)),
         calc(0px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
-    ) rotate(0deg) scale(0.8);
+    ) rotate(0deg) scale(calc(0.8 * var(--letter-scale, 1)));
     /* No animation initially - will be added when visible */
 }
 
@@ -69,31 +82,31 @@ body {
 
 /* Floating/orbital animation for each letter */
 /* This handles the continuous floating motion on top of the baseline variation */
-/* Scale is preserved at 1 (from appear animation) */
+/* Scale uses letter-scale variable for size variation */
 @keyframes float {
     0%, 100% {
         transform: translate(
             calc(0px + var(--interaction-x, 0px)), 
             calc(0px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
-        ) rotate(0deg) scale(1);
+        ) rotate(0deg) scale(var(--letter-scale, 1));
     }
     25% {
         transform: translate(
             calc(2px + var(--interaction-x, 0px)), 
             calc(-3px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
-        ) rotate(0.5deg) scale(1);
+        ) rotate(0.5deg) scale(var(--letter-scale, 1));
     }
     50% {
         transform: translate(
             calc(-2px + var(--interaction-x, 0px)), 
             calc(2px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
-        ) rotate(-0.5deg) scale(1);
+        ) rotate(-0.5deg) scale(var(--letter-scale, 1));
     }
     75% {
         transform: translate(
             calc(3px + var(--interaction-x, 0px)), 
             calc(1px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
-        ) rotate(0.3deg) scale(1);
+        ) rotate(0.3deg) scale(var(--letter-scale, 1));
     }
 }
 
@@ -105,14 +118,14 @@ body {
         transform: translate(
             calc(0px + var(--interaction-x, 0px)),
             calc(0px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
-        ) rotate(0deg) scale(0.8);
+        ) rotate(0deg) scale(calc(0.8 * var(--letter-scale, 1)));
     }
     to {
         opacity: 1;
         transform: translate(
             calc(0px + var(--interaction-x, 0px)),
             calc(0px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
-        ) rotate(0deg) scale(1);
+        ) rotate(0deg) scale(var(--letter-scale, 1));
     }
 }
 

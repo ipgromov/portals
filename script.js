@@ -1,21 +1,80 @@
 // Your 10 rhetorical questions - you can modify these
 const questions = [
-    "What if the door you're looking for doesn't exist?",
-    "Where do thoughts go when they're forgotten?",
-    "Is the path you're on the one you chose?",
-    "What happens to time when no one is watching?",
-    "Are you moving forward or just standing still?",
-    "What if every choice you make creates a new world?",
-    "Do you see the portal or just the frame?",
-    "What exists between the spaces in your memory?",
-    "Are you the observer or the one being observed?",
-    "What if this moment is the only one that's real?"
-];
+    "Was befindet sich auf der anderen Seite dieses Portals?",
+    "Was machst du auf dieser Straße?",
+    "Tritt in dieses Portal der Franklinstraße ein.",
+    "Schau nach oben!",
+    "Was befindet sich unter den Bänken?",
+    "Wie kann die Franklinstraße zu einem Spielplatz werden?",
+    "Wie viel Zeit verbringst du hier?",
+    "Wie fühlst du dich auf dieser Straße?",
+    "Wenn du etwas an dieser Straße ändern könntest, was wäre das?",
+    "Wie möchtest du hier auf der Franklinstraße Zeit verbringen?",
+    "Tritt in dieses Portal ein und verändere eine Sache an der Franklinstraße."
+  ];
 
 let currentQuestionIndex = 0;
 let letterDelay = 100; // milliseconds between each letter
 let displayDuration = 10000; // 10 seconds to display the full question
 let fadeOutDuration = 1500; // 1.5 seconds to fade out
+let currentColors = { background: '#000000', text: '#ffffff' };
+
+// Generate a contrasting color pair
+function generateColorPair() {
+    // Generate a random hue (0-360)
+    const baseHue = Math.random() * 360;
+    
+    // Generate background color - darker, more saturated
+    const bgSaturation = 60 + Math.random() * 30; // 60-90%
+    const bgLightness = 20 + Math.random() * 15; // 20-35% (dark)
+    
+    // Generate text color - lighter, complementary or contrasting
+    // Use opposite side of color wheel or high contrast
+    const textHue = (baseHue + 180 + (Math.random() - 0.5) * 60) % 360; // Complementary with variation
+    const textSaturation = 70 + Math.random() * 20; // 70-90%
+    const textLightness = 60 + Math.random() * 25; // 60-85% (light)
+    
+    // Convert HSL to hex
+    const bgColor = hslToHex(baseHue, bgSaturation, bgLightness);
+    const textColor = hslToHex(textHue, textSaturation, textLightness);
+    
+    return { background: bgColor, text: textColor };
+}
+
+// Convert HSL to hex
+function hslToHex(h, s, l) {
+    h = h / 360;
+    s = s / 100;
+    l = l / 100;
+    
+    let r, g, b;
+    
+    if (s === 0) {
+        r = g = b = l; // achromatic
+    } else {
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    
+    const toHex = (c) => {
+        const hex = Math.round(c * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+    
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
 
 // Generate a normally distributed random number using Box-Muller transform
 function normalRandom(mean = 0, stdDev = 1) {
@@ -37,6 +96,23 @@ function generateBaselineVariation() {
     
     // Clamp to reasonable range (-4px to +4px)
     value = Math.max(-4, Math.min(4, value));
+    
+    return value;
+}
+
+// Generate letter size variation with normal distribution
+// Most letters normal size (mean=1.0), rarely slightly bigger
+function generateLetterSize() {
+    // Use normal distribution: mean=1.0, stdDev=0.08
+    // This means ~68% will be within 0.92 to 1.08
+    // ~95% within 0.84 to 1.16
+    // ~99.7% within 0.76 to 1.24
+    // Most letters will be close to 1.0, rarely bigger
+    let value = normalRandom(1.0, 0.08);
+    
+    // Clamp to reasonable range (0.9 to 1.2)
+    // This ensures letters don't get too small or too large
+    value = Math.max(0.9, Math.min(1.2, value));
     
     return value;
 }
@@ -63,6 +139,10 @@ function createLetterElement(char, index) {
     // Apply baseline variation immediately (before appear animation)
     // This ensures letters spawn with variation from the start
     letter.style.setProperty('--initial-baseline-y', `${baselineVariation}px`);
+    
+    // Generate letter size variation using normal distribution
+    const letterSize = generateLetterSize();
+    letter.style.setProperty('--letter-scale', letterSize);
     
     return letter;
 }
@@ -121,7 +201,7 @@ function typeQuestion(question, container) {
             wordElement.style.display = 'inline-block';
             wordElement.style.verticalAlign = 'baseline';
             // Set min-height to prevent vertical shifting as letters appear
-            wordElement.style.minHeight = '1.0em'; // Match line-height
+            wordElement.style.minHeight = '0.85em'; // Match line-height
             container.appendChild(wordElement);
             return wordElement;
         });
@@ -177,6 +257,18 @@ function typeQuestion(question, container) {
 
 function fadeOutQuestion(container) {
     return new Promise((resolve) => {
+        // Generate new colors for next question
+        const newColors = generateColorPair();
+        
+        // Start color transition at the same time as fade-out
+        const body = document.body;
+        body.style.transition = `background-color ${fadeOutDuration}ms ease-out, color ${fadeOutDuration}ms ease-out`;
+        body.style.backgroundColor = newColors.background;
+        body.style.color = newColors.text;
+        
+        // Update current colors
+        currentColors = newColors;
+        
         container.classList.add('fade-out');
         setTimeout(() => {
             // Clear content immediately after fade-out completes
@@ -197,6 +289,13 @@ async function showNextQuestion() {
         currentQuestionIndex = 0;
     }
     
+    // Generate colors for this question (if first question, generate initial colors)
+    if (currentQuestionIndex === 0 && currentColors.background === '#000000') {
+        currentColors = generateColorPair();
+        document.body.style.backgroundColor = currentColors.background;
+        document.body.style.color = currentColors.text;
+    }
+    
     const question = questions[currentQuestionIndex];
     
     // Type out the question letter by letter
@@ -205,7 +304,7 @@ async function showNextQuestion() {
     // Wait for display duration
     await new Promise(resolve => setTimeout(resolve, displayDuration));
     
-    // Fade out
+    // Fade out (this also transitions to new colors)
     await fadeOutQuestion(container);
     
     // Move to next question
