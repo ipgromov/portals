@@ -1,0 +1,156 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #000;
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: none;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    text-align: center;
+    padding: 2rem;
+}
+
+.question-container {
+    font-size: clamp(2rem, 5vw, 4rem);
+    line-height: 1.0;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3em;
+}
+
+.word {
+    display: inline-block;
+    white-space: nowrap;
+    margin-right: 0.5em;
+}
+
+.word .letter {
+    margin-right: 0.05em;
+}
+
+.letter {
+    display: inline-block;
+    position: relative;
+    opacity: 0;
+    transform-origin: center;
+    /* Initial state: matches appear animation's "from" state */
+    transform: translate(
+        calc(0px + var(--interaction-x, 0px)),
+        calc(0px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
+    ) rotate(0deg) scale(0.8);
+    /* No animation initially - will be added when visible */
+}
+
+.letter.visible {
+    /* First run appear animation (opacity + scale), then float continuously */
+    /* The appear animation completes, then float takes over with scale(1) preserved */
+    animation: appear 0.4s ease-out forwards, float 3s ease-in-out infinite 0.4s;
+}
+
+.letter.space {
+    width: 0.3em;
+}
+
+/* Floating/orbital animation for each letter */
+/* This handles the continuous floating motion on top of the baseline variation */
+/* Scale is preserved at 1 (from appear animation) */
+@keyframes float {
+    0%, 100% {
+        transform: translate(
+            calc(0px + var(--interaction-x, 0px)), 
+            calc(0px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
+        ) rotate(0deg) scale(1);
+    }
+    25% {
+        transform: translate(
+            calc(2px + var(--interaction-x, 0px)), 
+            calc(-3px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
+        ) rotate(0.5deg) scale(1);
+    }
+    50% {
+        transform: translate(
+            calc(-2px + var(--interaction-x, 0px)), 
+            calc(2px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
+        ) rotate(-0.5deg) scale(1);
+    }
+    75% {
+        transform: translate(
+            calc(3px + var(--interaction-x, 0px)), 
+            calc(1px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
+        ) rotate(0.3deg) scale(1);
+    }
+}
+
+/* Letter appearance animation - handles opacity, scale, and initial baseline position */
+/* Final state must match float animation's initial state (0%) for smooth transition */
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translate(
+            calc(0px + var(--interaction-x, 0px)),
+            calc(0px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
+        ) rotate(0deg) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translate(
+            calc(0px + var(--interaction-x, 0px)),
+            calc(0px + var(--baseline-y, 0px) + var(--interaction-y, 0px))
+        ) rotate(0deg) scale(1);
+    }
+}
+
+/* Baseline swing - applied via inline styles in JavaScript */
+
+/* Fade out animation */
+.question-container.fade-out {
+    animation: fadeOut 1.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Touch/mouse interaction - subtle pulse on hover/touch */
+.letter:hover {
+    animation: float 3s ease-in-out infinite, pulse 0.6s ease-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .question-container {
+        font-size: clamp(1.5rem, 6vw, 3rem);
+        padding: 1rem;
+    }
+}
+
